@@ -185,12 +185,12 @@ Initial road data set is obtained from different sources. It is improved over ti
 
 The road data is unstructured. We have a periodic offline processing pipeline, which transforms this raw data into the graph-based routing tiles our app needs.
 
-Instead of storing these tiles in a database as we don't need any database features. We can store them in S3 object storage, while caching them agressively.
+Instead of storing these tiles in a database as we don't need any database features. We can store them in S3 object storage, while caching them aggressively.
 
 We can also leverage libraries to compress adjacency lists into binary files efficiently.
 
 ### User location data
-User location data is very useful for updaring traffic conditions and doing all sorts of other analysis.
+User location data is very useful for updating traffic conditions and doing all sorts of other analysis.
 
 We can use Cassandra for storing this kind of data as its nature is to be write-heavy.
 
