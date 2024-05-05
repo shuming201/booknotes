@@ -69,7 +69,6 @@ Let's explore high-level design of video streaming and uploading.
 Let's now explore the flow of uploading videos and video metadata. Metadata includes info about video URL, size, resolution, format, etc.
 
 Here's how the video uploading flow works:
-![video-uploading-flow](images/video-uploading-flow.png)
  * Videos are uploaded to original storage
  * Transcoding servers fetch videos from storage and start transcoding
  * Once transcoding is complete, two steps are executed in parallel:
