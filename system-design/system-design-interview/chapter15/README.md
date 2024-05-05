@@ -45,7 +45,7 @@ Why?
  * Building scalable blob storage over CDN is complex and costly. Even big tech don't build everything from scratch. Netflix uses AWS and Facebook uses Akamai's CDN.
 
 Here's our system design at a high-level:
-![high-level-sys-design](images/high-level-sys-design.png)
+<img src=images/high-level-sys-design.png width=50% height=50%>
  * Client - you can watch youtube on web, mobile and TV.
  * CDN - videos are stored in CDN.
  * API Servers - Everything else, except video streaming goes through the API servers. Feed recommendation, generating video URL, updating metadata db and cache, user signup.
@@ -53,7 +53,8 @@ Here's our system design at a high-level:
 Let's explore high-level design of video streaming and uploading.
 
 ## Video uploading flow
-![video-uploading-flow](images/video-uploading-flow.png)
+<img src=images/video-uploading-flow.png width=70% height=70%>
+
  * Users watch videos on a supported client
  * Load balancer evenly distributes requests across API servers
  * All user requests go through API servers, except video streaming
@@ -77,12 +78,13 @@ Here's how the video uploading flow works:
  * API servers inform user that uploading is complete
 
 Here's how the metadata update flow works:
-![metadata-update-flow](images/metadata-update-flow.png)
+<img src=images/metadata-update-flow.png width=50% height=50%>
+
  * While file is being uploaded, user sends a request to update the video metadata - file name, size, format, etc.
  * API servers update metadata database & cache
 
 ## Video streaming flow
-![video-streaming-flow](images/video-streaming-flow.png)
+<img src=images/video-streaming-flow.png width=50% height=50%>
 
 Whenever users watch videos on YouTube, they don't download the whole video at once. Instead, they download a little and start watching it while downloading the rest.
 This is referred to as streaming. Stream is served from closest CDN server for lowest latency.
@@ -123,7 +125,7 @@ Some of the tasks applied on a video file:
  * Video is encoded to support different resolutions, codecs, bitrates, etc.
  * Thumbnail is automatically added if a user doesn't specify it.
  * Watermark - image overlay on video if specified by creator
-![video-encodings](images/video-encodings.png)
+<img src=images/video-encodings.png width=50% height=50%>
 
 ## Video transcoding architecture
 ![video-transcoding-architecture](images/video-transcoding-architecture.png)
@@ -164,10 +166,10 @@ How it works:
  * task scheduler removes the job from the running queue once the job is done
 
 ### Task workers
-![task-workers](images/task-workers.png)
+<img src=images/task-workers.png width=80% height=80%>
 
 The workers execute the tasks in the DAG. Different workers are responsible for different tasks and can be scaled independently.
-![task-workers-example](images/task-workers-example.png)
+<img src=images/task-workers-example.png width=20% height=20%>
 
 ### Temporary storage
 ![temporary-storage](images/temporary-storage.png)
@@ -191,7 +193,7 @@ We can split video uploading into separate units via GOP alignment:
 This enables fast resumable uploads if something goes wrong. Splitting the video file is done by the client.
 
 ### Speed optimization - place upload centers close to users
-![upload-centers](images/upload-centers.png)
+<img src=images/upload-centers.png width=50% height=50%>
 
 This can be achieved by leveraging CDNs.
 
@@ -225,7 +227,7 @@ CDN is expensive, as we've seen in our back of the envelope estimation.
 We can piggyback on the fact that video streams follow a long-tail distribution - ie a few popular videos are accessed frequently, but everything else is not.
 
 Hence, we can store popular videos in CDN and serve everything else from high capacity storage servers:
-![cdn-optimization](images/cdn-optimization.png)
+<img src=images/cdn-optimization.png width=50% height=50%>
 
 Other cost-saving optimizations:
  * We might not need to store many encoded versions for less popular videos. Short videos can be encoded on-demand.
