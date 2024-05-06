@@ -91,7 +91,7 @@ All the APIs require authentication and use HTTPS.
 As more files are uploaded, at some point, you reach your storage's capacity.
 
 One option to scale your storage server is by implementing sharing - each user's data is stored on separate servers:
-![sharding-example](images/sharding-example.png)
+<img src=images/sharding-example.png width=60% height=60%>
 
 This solves your issue but you're still worried about potential data loss.
 
@@ -105,7 +105,7 @@ Other areas you could improve:
  * File storage - Amazon S3 for storage. To ensure availability and durability, files are replicated in two separate geographical regions.
 
 Here's the updated design:
-![updated-simple-design](images/updated-simple-design.png)
+<img src=images/updated-simple-design.png width=60% height=60%>
 
 ## Sync conflicts
 Once the user base grows sufficiently, sync conflicts are unavoidable.
