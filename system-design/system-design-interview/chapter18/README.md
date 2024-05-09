@@ -43,7 +43,8 @@ Before exploring API and data model design, we'll study the communication protoc
 At a high-level we'd want to establish effective message passing between peers. This can be done via a peer-to-peer protocol, but that's not practical for a mobile app with flaky connection and tight power consumption constraints.
 
 A more practical approach is to use a shared backend as a fan-out mechanism towards friends you want to reach:
-![fan-out-backend](images/fan-out-backend.png)
+
+<img src="images/fan-out-backend.png" alt="fan-out-backend" width="400"/>
 
 What does the backend do?
  * Receives location updates from all active users
@@ -116,7 +117,8 @@ Hence, we'll need a distributed redis server cluster to handle the intense CPU l
 In order to support a distributed redis cluster, we'll need to utilize a service discovery component, such as zookeeper or etcd, to keep track of which servers are alive.
 
 What we need to encode in the service discovery component is this data:
-![channel-distribution-data](images/channel-distribution-data.png)
+
+<img src="images/channel-distribution-data.png" alt="channel-distribution-data" width="400"/>
 
 Web socket servers use that encoded data, fetched from zookeeper to determine where a particular channel lives. For efficiency, the hash ring data can be cached in-memory on each websocket server.
 
