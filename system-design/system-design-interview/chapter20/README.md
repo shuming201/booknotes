@@ -129,7 +129,8 @@ We also piggyback on the fact that the OS caches disk data in memory aggressivel
 It is important that the message schema is compliant between producer, queue and consumer to avoid extra copying. This allows much more efficient processing.
 
 Example message structure:
-![message-structure](images/message-structure.png)
+
+<img src="images/message-structure.png" alt="message-structure" width="400"/>
 
 The key of the message specifies which partition a message belongs to. An example mapping is `hash(key) % numPartitions`.
 For more flexibility, the producer can override default keys in order to control which partitions messages are distributed to.
@@ -167,7 +168,9 @@ If tuned for throughput, we might need more partitions per topic to compensate f
 If a producer wants to send a message to a partition, which broker should it connect to?
 
 One option is to introduce a routing layer, which route messages to the correct broker. If replication is enabled, the correct broker is the leader replica:
-![routing-layer](images/routing-layer.png)
+
+<img src="images/routing-layer.png" alt="routing-layer" width="400"/>
+
  * Routing layer reads the replication plan from the metadata store and caches it locally.
  * Producer sends a message to the routing layer.
  * Message is forwarded to broker 1 who is the leader of the given partition
@@ -180,13 +183,17 @@ This approach works but has some drawbacks:
  * The design doesn't enable batching messages
 
 To mitigate these issues, we can embed the routing layer into the producer:
-![routing-layer-producer](images/routing-layer-producer.png)
+
+<img src="images/routing-layer-producer.png" alt="routing-layer-producer" width="400"/>
+
  * Fewer network hops lead to lower latency
  * Producers can control which partition a message is routed to
  * The buffer allows us to batch messages in-memory and send out larger batches in a single request, which increases throughput.
 
 The batch size choice is a classical trade-off between throughput and latency. 
-![batch-size-throughput-vs-latency](images/batch-size-throughput-vs-latency.png)
+
+<img src="images/batch-size-throughput-vs-latency.png" alt="batch-size-throughput-vs-latency" width="400"/>
+
  * Larger batch size leads to longer wait time before batch is committed. 
  * Smaller batch size leads to request being sent sooner and having lower latency but lower throughput.
 
@@ -205,7 +212,9 @@ One important consideration when designing the consumer is whether to use a push
    * The down side is the higher latency and extra network calls when there are no new messages. Latter issue can be mitigated using long polling.
 
 Hence, most message queues (and us) choose the pull model.
-![consumer-flow](images/consumer-flow.png)
+
+<img src="images/consumer-flow.png" alt="consumer-flow" width="400"/>
+
  * A new consumer subscribes to topic A and joins group 1.
  * The correct broker node is found by hashing the group name. This way, all consumers in a group connect to the same broker.
  * Note that this consumer group coordinator is different from the coordination service (ZooKeeper).
