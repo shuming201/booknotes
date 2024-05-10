@@ -1,4 +1,4 @@
-# Hotel Reservation System
+/n/# Hotel Reservation System
 In this chapter, we're designing a hotel reservation system, similar to Marriott International.
 
 Applicable to other types of systems as well - Airbnb, flight reservation, movie ticket booking.
@@ -32,7 +32,8 @@ Before diving into designing the system, we should ask the interviewer questions
 
 Let's estimate the QPS. If we assume that there are three steps to reach the reservation page and there is a 10% conversion rate per page,
 we can estimate that if there are 3 reservations, then there must be 30 views of reservation page and 300 views of hotel room detail page.
-![qps-estimation](images/qps-estimation.png)
+
+<img src="images/qps-estimation.png" alt="qps-estimation" width="400"/>
 
 # Step 2 - Propose High-Level Design and Get Buy-In
 We'll explore - API Design, Data model, high-level design.
@@ -92,10 +93,12 @@ Given this knowledge, we'll choose a relational database because:
  * Relational DBs can easily model the data as the structure is very clear.
 
 Here is our schema design:
-![schema-design](images/schema-design.png)
+
+<img src="images/schema-design.png" alt="schema-design" width="600"/>
 
 Most fields are self-explanatory. Only field worth mentioning is the `status` field which represents the state machine of a given room:
-![status-state-machine](images/status-state-machine.png)
+
+<img src="images/status-state-machine.png" alt="status-state-machine" width="600"/>
 
 This data model works well for a system like Airbnb, but not for hotels where users don't reserve a particular room but a room type.
 They reserve a type of room and a room number is chosen at the point of reservation.
@@ -104,7 +107,9 @@ This shortcoming will be addressed in the [Improved Data Model](#improved-data-m
 
 ## High-level Design
 We've chosen a microservice architecture for this design. It has gained great popularity in recent years:
-![high-level-design](images/high-level-design.png)
+
+<img src="images/high-level-design.png" alt="high-level-design" width="700"/>
+
  * Users book a hotel room on their phone or computer
  * Admin perform administrative functions such as refunding/cancelling a payment, etc
  * CDN caches static resources such as JS bundles, images, videos, etc
@@ -142,7 +147,9 @@ POST /v1/reservations
 ```
 
 Here's the updated schema:
-![updated-schema](images/updated-schema.png)
+
+<img src="images/updated-schema.png" alt="updated-schema" width="600"/>
+
  * room - contains information about a room
  * room_type_rate - contains information about prices for a given room type
  * reservation - records guest reservation data
@@ -210,7 +217,8 @@ Here's a visualization of the first problem:
 There are two approaches to solving this problem:
  * Client-side handling - front-end can disable the book button once clicked. If a user disabled javascript, however, they won't see the button becoming grayed out.
  * Idemptent API - Add an idempotency key to the API, which enables a user to execute an action once, regardless of how many times the endpoint is invoked:
-![idempotency](images/idempotency.png)
+
+<img src="images/idempotency.png" alt="idempotency" width="500"/>
 
 Here's how this flow works:
  * A reservation order is generated once you're in the process of filling in your details and making a booking. The reservation order is generated using a globally unique identifier.
@@ -220,7 +228,9 @@ Here's how this flow works:
 ![unique-constraint-violation](images/unique-constraint-violation.png)
 
 What if there are multiple users making the same reservation?
-![double-booking-multiple-users](images/double-booking-multiple-users.png)
+
+<img src="images/double-booking-multiple-users.png" alt="double-booking-multiple-users" width="800"/>
+
  * Let's assume the transaction isolation level is not serializable
  * User 1 and 2 attempt to book the same room at the same time.
  * Transaction 1 checks if there are enough rooms - there are
@@ -301,7 +311,8 @@ This approach is very similar to optimistic locking, but the guardrails are impl
 ```
 CONSTRAINT `check_room_count` CHECK((`total_inventory - total_reserved` >= 0))
 ```
-![database-constraint](images/database-constraint.png)
+
+<img src="images/database-constraint.png" alt="database-constraint" width="800"/>
 
 Pros:
  * Easy to implement
@@ -328,10 +339,12 @@ One way to scale it is by implementing database sharding - we can split the data
 
 We can shard based on `hotel_id` as all queries filter based on it. 
 Assuming, QPS is 30,000, after sharding the database in 16 shards, each shard handles 1875 QPS, which is within a single MySQL cluster's load capacity.
-![database-sharding](images/database-sharding.png)
+
+<img src="images/database-sharding.png" alt="database-sharding" width="500"/>
 
 We can also utilize caching for room inventory and reservations via Redis. We can set TTL so that old data can expire for days which are past.
-![inventory-cache](images/inventory-cache.png)
+
+<img src="images/inventory-cache.png" alt="inventory-cache" width="400"/>
 
 The way we store an inventory is based on the `hotel_id`, `room_type_id` and `date`:
 ```
@@ -359,7 +372,7 @@ Caching cons:
 A monolithic application enables us to use a shared relational database for ensuring data consistency.
 
 In our microservice design, we chose a hybrid approach where some services are separate, 
-but the reservation and inventory APIs are handled by the same servicefor the reservation and inventory APIs.
+but the reservation and inventory APIs are handled by the same service for the reservation and inventory APIs.
 
 This is done because we want to leverage the relational database's ACID guarantees to ensure consistency.
 
@@ -367,7 +380,8 @@ However, the interviewer might challenge this approach as it's not a pure micros
 ![microservices-vs-monolith](images/microservices-vs-monolith.png)
 
 This can lead to consistency issues. In a monolithic server, we can leverage a relational DBs transaction capabilities to implement atomic operations:
-![atomicity-monolith](images/atomicity-monolith.png)
+
+<img src="images/atomicity-monolith.png" alt="atomicity-monolith" width="500"/>
 
 It's more challenging, however, to guarantee this atomicity when the operation spans across multiple services:
 ![microservice-non-atomic-operation](images/microservice-non-atomic-operation.png)
