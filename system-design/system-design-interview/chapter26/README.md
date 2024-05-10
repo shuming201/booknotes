@@ -1,6 +1,7 @@
 # Real-time Gaming Leaderboard
 We are going to design a leaderboard for an online mobile game:
-![leaderboard](images/leaderboard.png)
+
+<img src="images/leaderboard.png" alt="leaderboard" width="500"/>
 
 # Step 1 - Understand the Problem and Establish Design Scope
  * C: How is the score calculated for the leaderboard?
@@ -93,14 +94,17 @@ Example response:
 ```
 
 ## High-level architecture
-![high-level-architecture](images/high-level-architecture.png)
+
+<img src="images/high-level-architecture.png" alt="high-level-architecture" width="400"/>
+
  * When a player wins a game, client sends a request to the game service
  * Game service validates if win is valid and calls the leaderboard service to update the player's score
  * Leaderboard service updates the user's score in the leaderboard store
  * Player makes a call to leaderboard service to fetch leaderboard data, eg top 10 players and given player's rank
 
 An alternative design which was considered is the client updating their score directly within the leaderboard service:
-![alternative-design](images/alternative-design.png)
+
+<img src="images/alternative-design.png" alt="alternative-design" width="600"/>
 
 This option is not secure as it's susceptible to man-in-the-middle attacks. Players can put a proxy and change their score as they please.
 
@@ -108,7 +112,8 @@ One additional caveat is that for games, where the game logic is managed by the 
 Servers do it automatically for them based on the game logic.
 
 One additional consideration is whether we should put a message queue between the game server and the leaderboard service. This would be useful if other services are interested in game results, but that is not an explicit requirement in the interview so far, hence it's not included in the design:
-![message-queue-based-comm](images/message-queue-based-comm.png)
+
+<img src="images/message-queue-based-comm.png" alt="message-queue-based-comm" width="600"/>
 
 ## Data models
 Let's discuss the options we have for storing leaderboard data - relational DBs, Redis, NoSQL.
@@ -119,12 +124,14 @@ The NoSQL solution is discussed in the deep dive section.
 If the scale doesn't matter and we don't have that many users, a relational DB serves our quite well.
 
 We can start from a simple leaderboard table, one for each month (personal note - this doesn't make sense. You can just add a `month` column and avoid the headache of maintaining new tables each month): 
-![leaderboard-table](images/leaderboard-table.png)
+
+<img src="images/leaderboard-table.png" alt="leaderboard-table" width="200"/>
 
 There is additional data to include in there, but that is irrelevant to the queries we'd run, so it's omitted.
 
 What happens when a user wins a point?
-![user-wins-point](images/user-wins-point.png)
+
+<img src="images/user-wins-point.png" alt="user-wins-point" width="400"/>
 
 If a user doesn't exist in the table yet, we need to insert them first:
 ```
@@ -137,7 +144,8 @@ UPDATE leaderboard set score=score + 1 where user_id='mary1934';
 ```
 
 How do we find the top players of a leaderboard?
-![find-leaderboard-position](images/find-leaderboard-position.png)
+
+<img src="images/find-leaderboard-position.png" alt="find-leaderboard-position" width="400"/>
 
 We can run the following query:
 ```
@@ -210,7 +218,8 @@ Example result:
 ```
 
 What about user fetching their leaderboard position?
-![leaderboard-position-of-user](images/leaderboard-position-of-user.png)
+
+<img src="images/leaderboard-position-of-user.png" alt="leaderboard-position-of-user" width="600"/>
 
 This can be easily achieved by the following query, given that we know a user's leaderboard position:
 ```
@@ -241,7 +250,8 @@ If we choose to manage the services our selves, we'll use redis for leaderboard 
 ![manage-services-ourselves](images/manage-services-ourselves.png)
 
 Alternatively, we could use cloud offerings to manage a lot of the services for us. For example, we can use AWS API Gateway to route API calls to AWS Lambda functions:
-![api-gateway-mapping](images/api-gateway-mapping.png)
+
+<img src="images/api-gateway-mapping.png" alt="api-gateway-mapping" width="600"/>
 
 AWS Lambda enables us to run code without managing or provisioning servers ourselves. It runs only when needed and scales automatically.
 
@@ -274,10 +284,12 @@ To fetch a user's rank, we'll need to calculate the rank within the user's shard
 The latter is a O(1) operation as total records per shard can quickly be accessed via the info keyspace command.
 
 Alternatively, we can use hash partitioning via Redis Cluster. It is a proxy which distributes data across redis nodes based on partitioning similar to consistent hashing, but not exactly the same:
-![hash-partition](images/hash-partition.png)
+
+<img src="images/hash-partition.png" alt="hash-partition" width="800"/>
 
 Calculating the top 10 players is challenging with this setup. We'll need to get the top 10 players of each shard and merge the results in the application:
-![top-10-players-calculation](images/top-10-players-calculation.png)
+
+<img src="images/top-10-players-calculation.png" alt="top-10-players-calculation" width="600"/>
 
 There are some limitations with the hash partitioning:
  * If we need to fetch top K users, where K is high, latency can increase as we'll need to fetch a lot of data from all the shards
