@@ -59,16 +59,20 @@ Prices:
 The US market has three tiers of price quotes - L1, L2, L3.
 
 L1 market data contains best bid/ask prices and quantities:
-![l1-price](images/l1-price.png)
+
+<img src="images/l1-price.png" alt="l1-price" width="400"/>
 
 L2 includes more price levels:
-![l2-price](images/l2-price.png)
+
+<img src="images/l2-price.png" alt="l2-price" width="400"/>
 
 L3 shows levels and queued quantity at each level:
-![l3-price](images/l3-price.png)
+
+<img src="images/l3-price.png" alt="l3-price" width="600"/>
 
 A candlestick shows the market open and close price, as well as the highest and lowest prices in the given interval:
-![candlestick](images/candlestick.png)
+
+<img src="images/candlestick.png" alt="candlestick" width="400"/>
 
 FIX is a protocol for exchanging securities transaction information, used by most vendors. Example securities transaction:
 ```
@@ -108,7 +112,8 @@ The matching engine is at its heart, also called the cross engine. Primary respo
  * Matches must be produced in a deterministic order. Foundational for high availability
 
 Next is the sequencer - it is the key component making the matching engine deterministic by stamping each inbound order and outbound fill with a sequence ID.
-![sequencer](images/sequencer.png)
+
+<img src="images/sequencer.png" alt="sequencer" width="600"/>
 
 We stamp inbound orders and outbound fills for several reasons:
  * timeliness and fairness
@@ -128,22 +133,26 @@ The order manager's responsibilities:
 The main challenge with implementing the order manager is the state transition management. Event sourcing is one viable solution (discussed in deep dive).
 
 Finally, the client gateway receives orders from users and sends them to the order manager. Its responsibilities:
-![client-gateway](images/client-gateway.png)
+
+<img src="images/client-gateway.png" alt="client-gateway" width="400"/>
 
 Since the client gateway is on the critical path, it should stay lightweight.
 
 There can be multiple client gateways for different clients. Eg a colo engine is a trading engine server, rented by the broker in the exchange's data center:
-![client-gateways](images/client-gateways.png)
+
+<img src="images/client-gateways.png" alt="client-gateways" width="600"/>
 
 ### Market data flow
 The market data publisher receives executions from the matching engine and builds the order book/candlestick charts from the execution stream.
 
 That data is sent to the data service, which is responsible for showing the aggregated data to subscribers:
-![market-data](images/market-data.png)
+
+<img src="images/market-data.png" alt="market-data" width="600"/>
 
 ### Reporting flow
 The reporter is not on the critical path, but it is an important component nevertheless.
-![reporting-flow](images/reporting-flow.png)
+
+<img src="images/reporting-flow.png" alt="reporting-flow" width="600"/>
 
 It is responsible for trading history, tax reporting, compliance reporting, settlements, etc.
 Latency is not a critical requirement for the reporting flow. Accuracy and compliance are more important.
@@ -258,7 +267,9 @@ An efficient data structure for this model, needs to satisfy:
  * iterate through price levels
 
 Example order book execution:
-![order-book-execution](images/order-book-execution.png)
+
+<img src="images/order-book-execution.png" alt="order-book-execution" width="600"/>
+
 
 After fulfilling this large order, the price increases as the bid/ask spread widens.
 
@@ -335,10 +346,12 @@ If we follow the original design, there are several bottlenecks - network latenc
 With such a design we can achieve tens of milliseconds end to end latency. We want to achieve tens of microseconds instead.
 
 Hence, we'll put everything on one server and processes are going to communicate via mmap as an event store:
-![mmap-bus](images/mmap-bus.png)
+
+<img src="images/mmap-bus.png" alt="mmap-bus" width="600"/>
 
 Another optimization is using an application loop (while loop executing mission-critical tasks), pinned to the same CPU to avoid context switching:
-![application-loop](images/application-loop.png)
+
+<img src="images/application-loop.png" alt="application-loop" width="600"/>
 
 Another side effect of using an application loop is that there is no lock contention - multiple threads fighting for the same resource.
 
@@ -350,12 +363,16 @@ One trick we can use is creating the file in `/dev/shm`, which stands for "share
 Event sourcing is discussed in-depth in the [digital wallet chapter](../chapter28). Reference it for all the details.
 
 In a nutshell, instead of storing current states, we store immutable state transitions:
-![event-sourcing](images/event-sourcing.png)
+
+<img src="images/event-sourcing.png" alt="event-sourcing" width="600"/>
+
  * On the left - traditional schema
  * On the right - event source schema
 
 Here's how our design looks like thus far:
-![design-so-far](images/design-so-far.png)
+
+<img src="images/design-so-far.png" alt="design-so-far" width="600"/>
+
  * external domain interacts with our client gateway using the FIX protocol
  * Order manager receives the new order event, validates it and adds it to its internal state. Order is then sent to matching core
  * If order is matched, the `OrderFilledEvent` is generated and sent over mmap
@@ -364,7 +381,8 @@ Here's how our design looks like thus far:
 One additional optimizations - all components hold a copy of the order manager, which is packaged as a library to avoid extra calls for managing orders
 
 The sequencer in this design, changes to not be an event store, but be a single writer, sequencing events before forwarding them to the event store:
-![sequencer-deep-dive](images/sequencer-deep-dive.png)
+
+<img src="images/sequencer-deep-dive.png" alt="sequencer-deep-dive" width="600"/>
 
 ## High availability
 We aim for 99.99% availability - only 8.64s of downtime per day.
@@ -376,7 +394,8 @@ To achieve that, we have to identify single-point-of-failures in the exchange ar
 Stateless services such as the client gateway can easily be horizontally scaled by adding more servers.
 
 For stateful components, we can process inbound events, but not publish outbound events if we're not the leader:
-![leader-election](images/leader-election.png)
+
+<img src="images/leader-election.png" alt="leader-election" width="600"/>
 
 To detect the primary replica being down, we can send heartbeats to detect that its non-functional.
 
@@ -402,10 +421,12 @@ How to address these:
  * leader-election can be used (eg Raft) to determine which replica becomes the leader in the event of the primary going down
 
 Example of how replication works across different servers:
-![replication-across-servers](images/replication-across-servers.png)
+
+<img src="images/replication-across-servers.png" alt="replication-across-servers" width="600"/>
 
 Example leader-election terms:
-![leader-election-terms](images/leader-election-terms.png)
+
+<img src="images/leader-election-terms.png" alt="leader-election-terms" width="600"/>
 
 For details on how Raft works, [check this out](https://thesecretlivesofdata.com/raft/)
 
@@ -475,7 +496,8 @@ This matching algorithm uses the FIFO algorithm for determining which orders at 
 Functional determinism is guaranteed via the sequencer technique we used.
 
 The actual time when the event happens doesn't matter:
-![determinism](images/determinism.png)
+
+<img src="images/determinism.png" alt="determinism" width="600"/>
 
 Latency determinism is something we have to track. We can calculate it based on monitoring 99 or 99.99 percentile latency.
 
@@ -485,7 +507,8 @@ Things which can cause latency spikes are garbage collector events in eg Java.
 The market data publisher receives matched results from the matching engine and rebuilds the order book and candlestick charts based on them.
 
 We only keep part of the candlesticks as we don't have infinite memory. Clients can choose how much granular info they want. More granular info might require a higher price:
-![market-data-publisher](images/market-data-publisher.png)
+
+<img src="images/market-data-publisher.png" alt="market-data-publisher" width="800"/>
 
 A ring buffer (aka circular buffer) is a fixed-size queue with the head connected to the tail. The space is preallocated to avoid allocations. The data structure is also lock-free.
 
