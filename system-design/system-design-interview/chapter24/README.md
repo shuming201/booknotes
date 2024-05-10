@@ -34,20 +34,24 @@ There are various protocols used for sending and receiving emails:
  * HTTPS - not technically an email protocol, but it can be used for web-based email clients.
 
 Apart from the mailing protocol, there are some DNS records we need to configure for our email server - the MX records:
-![dns-lookup](images/dns-lookup.png)
+
+<img src="images/dns-lookup.png" alt="dns-lookup" width="600"/>
 
 Email attachments are sent base64-encoded and there is usually a size limit of 25mb on most mail services.
 This is configurable and varies from individual to corporate accounts.
 
 ## Traditional mail servers
 Traditional mail servers work well when there are a limited number of users, connected to a single server.
-![traditional-mail-server](images/traditional-mail-server.png)
+
+<img src="images/traditional-mail-server.png" alt="traditional-mail-server" width="500"/>
+
  * Alice logs into her Outlook email and presses "send". Email is sent to Outlook mail server. Communication is via SMTP.
  * Outlook server queries DNS to find MX record for gmail.com and transfers the email to their servers. Communication is via SMTP.
  * Bob fetches emails from his gmail server via IMAP/POP.
 
 In traditional mail servers, emails were stored on the local file system. Every email was a separate file.
-![local-dir-storage](images/local-dir-storage.png)
+
+<img src=images/local-dir-storage.png width=50% height=50%>
 
 As the scale grew, disk I/O became a bottleneck. Also, it doesn't satisfy our high availability and reliability requirements.
 Disks can be damaged and server can go down.
@@ -87,7 +91,9 @@ Example response:
 ```
 
 Here's the high-level design of the distributed mail server:
-![high-level-architecture](images/high-level-architecture.png)
+
+<img src="images/high-level-architecture.png" alt="high-level-architecture" width="600"/>
+
  * Webmail - users use web browsers to send/receive emails
  * Web servers - public-facing request/response services used to manage login, signup, user profile, etc.
  * Real-time servers - Used for pushing new email updates to clients in real-time. We use websockets for real-time communication but fallback to long-polling for older browsers that don't support them.
@@ -151,23 +157,29 @@ Let's define the tables:
  * Queries we need to support - get all folders for a user, display all emails for a folder, create/get/delete an email, fetch read/unread email, get conversation threads (bonus)
 
 Legend for tables to follow:
-![legend](images/legend.png)
+
+<img src="images/legend.png" alt="legend" width="200"/>
 
 Here is the folders table:
-![folders-table](images/folders-table.png)
+
+<img src="images/folders-table.png" alt="folders-table" width="200"/>
 
 emails table:
-![emails-table](images/emails-table.png)
+
+<img src="images/emails-table.png" alt="emails-table" width="200"/>
+
  * email_id is timeuuid which allows sorting based on timestamp when email was created
 
 Attachments are stored in a separate table, identified by filename:
-![attachments](images/attachments.png)
+
+<img src="images/attachments.png" alt="attachments" width="400"/>
 
 Supporting fetchin read/unread emails is easy in a traditional relational database, but not in Cassandra, since filtering on non-partition/clustering key is prohibited.
 One workaround to fetch all emails in a folder and filter in-memory, but that doesn't work well for a big-enough application.
 
 What we can do is denormalize the emails table into read/unread emails tables:
-![read-unread-emails](images/read-unread-emails.png)
+
+<img src="images/read-unread-emails.png" alt="read-unread-emails" width="400"/>
 
 In order to support conversation threads, we can include some headers, which mail clients interpret and use to reconstruct a conversation thread:
 ```
@@ -211,7 +223,8 @@ Let's compare google search with email search:
 | Email search  | User’s own email box | Sort by attributes eg time, date, etc | Indexing should be quick and results accurate.    |
 
 To achieve this search functionality, one option is to use an Elasticsearch cluster. We can use `user_id` as the partition key to group data under the same node:
-![elasticsearch](images/elasticsearch.png)
+
+<img src="images/elasticsearch.png" alt="elasticsearch" width="600"/>
 
 Mutating operations are async via Kafka in order to decouple services from the reindexing flow.
 Actually searching for data happens synchronously.
@@ -226,7 +239,8 @@ To achieve that, we can use Log-Structured Merge-Trees (LSM) to structure the in
 This technique is used in Cassandra, BigTable and RocksDB.
 
 Its core idea is to store data in-memory until a predefined threshold is reached, after which it is merged in the next layer (disk):
-![lsm-tree](images/lsm-tree.png)
+
+<img src="images/lsm-tree.png" alt="lsm-tree" width="600"/>
 
 Main trade-offs between the two approaches:
  * Elasticsearch scales to some extent, whereas a custom search engine can be fine-tuned for the email use-case, allowing it to scale further.
@@ -237,7 +251,8 @@ Main trade-offs between the two approaches:
 Since individual user operations don't collide with other users, most components can be independently scaled.
 
 To ensure high availability, we can also use a multi-DC setup with leader-folower failover in case of failures:
-![multi-dc-example](images/multi-dc-example.png)
+
+<img src="images/multi-dc-example.png" alt="multi-dc-example" width="600"/>
 
 # Step 4 - Wrap up
 Additional talking points:
