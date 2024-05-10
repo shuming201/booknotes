@@ -36,7 +36,8 @@ This is not a high throughput for any database system, so it's not the focus of 
 
 # Step 2 - Propose High-Level Design and Get Buy-In
 At a high-level, we have three actors, participating in money movement:
-![high-level-flow](images/high-level-flow.png)
+
+<img src="images/high-level-flow.png" alt="high-level-flow" width="500"/>
 
 ## Pay-in flow
 Here's the high-level overview of the pay-in flow:
@@ -134,7 +135,8 @@ Sum of all transaction entries is always zero. This mechanism provides end-to-en
 
 ## Hosted payment page
 To avoid storing credit card information and having to comply with various heavy regulations, most companies prefer utilizing a widget, provided by PSPs, which store and handle credit card payments for you:
-![hosted-payment-page](images/hosted-payment-page.png)
+
+<img src="images/hosted-payment-page.png" alt="hosted-payment-page" width="300"/>
 
 ## Pay-out flow
 The components of the pay-out flow are very similar to the pay-in flow.
@@ -156,7 +158,9 @@ If we go down the traditional route, a PSP can be integrated in one of two ways:
  * Through a hosted payment page to avoid dealing with payment information regulations
 
 Here's how the hosted payment page workflow works:
-![hosted-payment-page-workflow](images/hosted-payment-page-workflow.png)
+
+<img src="images/hosted-payment-page-workflow.png" alt="hosted-payment-page-workflow" width="800"/>
+
  * User clicks "checkout" button in the browser
  * Client calls the payment service with the payment order information
  * After receiving payment order information, the payment service sends a payment registration request to the PSP.
@@ -172,7 +176,8 @@ Here's how the hosted payment page workflow works:
 The previous section explains the happy path of a payment. Unhappy paths are detected and reconciled using a background reconciliation process.
 
 Every night, the PSP sends a settlement file which our system uses to compare the external system's state against our internal system's state.
-![settlement-report](images/settlement-report.png)
+
+<img src="images/settlement-report.png" alt="settlement-report" width="800"/>
 
 This process can also be used to detect internal inconsistencies between eg the ledger and the wallet services.
 
@@ -204,10 +209,12 @@ Synchronous communication (ie HTTP) works well for small-scale systems, but suff
 Asynchronous communication can be divided into two categories.
 
 Single receiver - multiple receivers subscribe to the same topic and messages are processed only once:
-![single-receiver](images/single-receiver.png)
+
+<img src="images/single-receiver.png" alt="single-receiver" width="400"/>
 
 Multiple receivers - multiple receivers subscribe to the same topic, but messages are forwarded to all of them:
-![multiple-receiver](images/multiple-receiver.png)
+
+<img src="images/multiple-receiver.png" alt="multiple-receiver" width="600"/>
 
 Latter model works well for our payment system as a payment can trigger multiple side effects, handled by different services.
 
@@ -227,7 +234,8 @@ We need to ensure a payment gets processed exactly-once to avoid double-charging
 An operation is executed exactly-once if it is executed at-least-once and at-most-once at the same time.
 
 To achieve the at-least-once guarantee, we'll use a retry mechanism:
-![retry-mechanism](images/retry-mechanism.png)
+
+<img src="images/retry-mechanism.png" alt="retry-mechanism" width="600"/>
 
 Here are some common strategies on deciding the retry intervals:
  * immediate retry - client immediately sends another request after failure
@@ -246,7 +254,8 @@ To address the double payment problem, we need to use an idempotency mechanism -
 
 From an API perspective, clients can make multiple calls which produce the same result. 
 Idempotency is managed by a special header in the request (eg `idempotency-key`), which is typically a UUID.
-![idempotency-example](images/idempotency-example.png)
+
+<img src="images/idempotency-example.png" alt="idempotency-example" width="600"/>
 
 Idempotency can be achieved using the database's mechanism of adding unique key constraints:
  * server attempts to insert a new row in the database
