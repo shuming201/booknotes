@@ -23,7 +23,8 @@ Here's the options we'll consider:
  * Twitter snowflake approach
 
 ## Multi-master replication
-![multi-master-replication](images/multi-master-replication.png)
+
+<img src=images/multi-master-replication.png width=60% height=60%>
 
 This uses the database's auto_increment feature, but instead of increasing by 1, we increase by K where K = number of servers.
 
@@ -50,7 +51,8 @@ Cons:
 
 ## Ticket server
 A ticket server is a centralized server for generating unique primary keys across multiple services:
-![ticket-server](images/ticket-server.png)
+
+<img src=images/ticket-server.png width=60% height=60%>
 
 Pros:
  * Numeric IDs
