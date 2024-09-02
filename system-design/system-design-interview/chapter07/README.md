@@ -46,15 +46,18 @@ This theorem states that a data store can't provide more than two of the followi
  * Consistency - all clients see the same data at the same time, no matter which node they're connected to.
  * Availability - all clients get a response, regardless of which node they connect to.
  * Partition tolerance - A network partition means that not all nodes within the cluster can communicate. Partition tolerance means that the system is operational even in such circumstances.
-![cap-theorem](images/cap-theorem.png)
+
+<img src=images/cap-theorem.png width=30% height=30%>
 
 A distributed system which supports consistency and availability cannot exist in the real world as network failures are inevitable.
 
 Example distributed data store in an ideal situation:
-![example-distributed-system](images/example-distributed-system.png)
+
+<img src=images/example-distributed-system.png width=30% height=30%>
 
 In the real world, a network partition can occur which hinders communication with eg node 3:
-![network-partition-example](images/network-partition-example.png)
+
+<img src=images/network-partition-example.png width=30% height=30%>
 
 If we favor consistency over availability, all write operations need to be blocked when the above scenario occurs.
 
@@ -75,7 +78,8 @@ The challenge then, is to distribute data evenly and minimize data movement when
 Both these problems can be addressed using consistent hashing (discussed in previous chapter):
  * Servers are put on a hash ring
  * Keys are hashed and put on the closest server in clockwise direction
-![consistent-hashing](images/consistent-hashing.png)
+
+<img src=images/consistent-hashing.png width=50% height=50%>
 
 This has the following advantages:
  * Automatic scaling - servers can be added/removed at will with minimal impact on key location
@@ -85,7 +89,8 @@ This has the following advantages:
 To achieve high availability & reliability, data needs to be replicated on multiple nodes.
 
 We can achieve that by allocating a key to multiple nodes on the hash ring:
-![data-replication](images/data-replication.png)
+
+<img src=images/data-replication.png width=50% height=50%>
 
 One caveat to keep in mind that your key might get allocated to virtual nodes mapped to the same physical node. 
 To avoid this, we can only choose unique physical nodes when replicating data.
@@ -99,7 +104,8 @@ Quorum consensus can guarantee consistency for both reads and writes:
  * N - number of replicas
  * W - write quorum. Write operations must be acknowledged by W nodes.
  * R - read quorum. Read operations must be acknowledged by R nodes.
-![write-quorum-example](images/write-quorum-example.png)
+
+<img src=images/write-quorum-example.png width=50% height=50%>
 
 The configuration of W and R is a trade-off between latency and consistency.
  * W = 1, R = 1 -> low latency, eventual consistency
@@ -125,13 +131,16 @@ This allows concurrent writes to enter the system and clients need to reconcile 
 Replication provides high availability, but it leads to data inconsistencies across replicas.
 
 Example inconsistency:
-![inconsistency-example](images/inconsistency-example.png)
+
+<img src=images/inconsistency-example.png width=50% height=50%>
 
 This kind of inconsistency can be resolved using a versioning system using a vector clock.
 A vector clock is a [server, version] pair, associated with a data item. Each time a data item is changed in a server, it's associated vector clock changes to [server_id, curr_version+1].
 
 Example inconsistency resolution:
-![inconsistency-resolution](images/inconsistency-resolution.png)
+
+<img src=images/inconsistency-resolution.png width=50% height=50%>
+
  * Client writes D1, handled by Sx, which writes version [Sx, 1]
  * Another client reads D1, updates it and Sx increments version to [Sx, 2]
  * Client writes D3 based on D2 in Sy -> D3([Sx, 2][Sy, 1]).
@@ -153,7 +162,8 @@ At a large enough scale, failures are inevitable. It is important to determine y
 In a distributed system, it is insufficient to conclude that a server is down just because you can't reach it. You need at least another source of information.
 
 One approach to do that is to use all-to-all multi-casting. This, however, is inefficient when there are many servers in the system.
-![multicasting](images/multicasting.png)
+
+<img src=images/multicasting.png width=50% height=50%>
 
 A better solution is to use a decentralized failure detection mechanism, such as a gossip protocol:
  * Each node maintains a node membership list with member IDs and heartbeat counters.
@@ -162,7 +172,7 @@ A better solution is to use a decentralized failure detection mechanism, such as
  * Once a node receives a heartbeat, its membership list is updated.
  * If a heartbeat is not received after a given threshold, the member is marked offline.
 
-![gossip-protocol](images/gossip-protocol.png)
+<img src=images/gossip-protocol.png width=80% height=80%>
 
 In the above scenario, s0 detects that s2 is down as no heartbeat is received for a long time. 
 It propagates that information to other nodes which also verify that the heartbeat hasn't been updated.
@@ -184,7 +194,8 @@ This is achieved by leveraging merkle trees in order to reduce the amount of dat
 The merkle tree works by building a tree of hashes where leaf nodes are buckets of key-value pairs.
 
 If any of the buckets across two replicas is different, then the merkle tree's hashes will be different all the way to the root:
-![merkle-tree](images/merkle-tree.png)
+
+<img src=images/merkle-tree.png width=80% height=80%>
 
 Using merkle trees, two replicas will compare only as much data as is different between them, instead of comparing the entire data set.
 
@@ -194,7 +205,8 @@ A data center outage could happen due to a natural disaster or serious hardware 
 To ensure resiliency, make sure your data is replicated across multiple data centers.
 
 # System architecture diagram
-![architecture-diagram](images/architecture-diagram.png)
+
+<img src=images/architecture-diagram.png width=70% height=70%>
 
 Main features:
  * Clients communicate with the key-value store through a simple API
@@ -205,10 +217,13 @@ Main features:
  * There is no single point of failure
 
 Some of the tasks each node is responsible for:
-![node-responsibilities](images/node-responsibilities.png)
+
+<img src=images/node-responsibilities.png width=50% height=50%>
 
 ## Write path
-![write-path](images/write-pth.png)
+
+<img src=images/write-pth.png width=65% height=65%>
+
  * Write requests are persisted in a commit log
  * Data is saved in the memory cache
  * When memory cache is full or reaches a given threshold, data is flushed to an SSTable on disk
@@ -217,10 +232,13 @@ SSTable == Sorted String Table. Holds a sorted list of key-value pairs.
 
 ## Read path
 Read path when data is in memory:
-![read-path-in-memory](images/read-path-in-memory.png)
+
+<img src=images/read-path-in-memory.png width=65% height=65%>
 
 Read path when data is not in memory:
-![read-path-not-in-memory](images/read-path-not-in-memory.png)
+
+<img src=images/read-path-not-in-memory.png width=65% height=65%>
+
  * If data is in memory, fetch it from there. Otherwise, find it in the SSTable.
  * A bloom filter is used for efficient lookup in the SSTable.
  * The SSTables returns the resulting data, which is returned to the client
