@@ -32,7 +32,8 @@ A URL shortening service needs two endpoints:
 
 ## URL Redirecting
 How it works:
-![tinyurl-example](images/tinyurl-example.png)
+
+<img src=images/tinyurl-example.png width=60% height=60%>
 
 What's the difference between 301 and 302 statuses?
  * 301 (Permanently moved) - indicates that the URL permanently points to the new URL. This instructs the browser to bypass the tinyurl service on subsequent calls.
@@ -56,7 +57,8 @@ We'll explore the data model, hash function, URL shortening and redirection.
 In the simplified version, we're storing the URLs in a hash table. That is problematic as we'll run out of memory and also, in-memory doesn't persist across server reboot.
 
 That's why we can use a simple relational table instead:
-![url-table](images/url-table.png)
+
+<img src=images/url-table.png width=20% height=20%>
 
 ## Hash function
 The hash value consists of characters `[0-9a-zA-Z]`, which gives a max of 62 characters.
@@ -66,7 +68,8 @@ To figure out the smallest hash value we can use, we need to calculate n in `62^
 For the hash function itself, we can either use `base62 conversion` or `hash + collision detection`.
 
 In the latter case, we can use something like MD-5 or SHA256, but only taking the first 7 characters. To resolve collisions, we can reiterate \w an some padding to input string until there is no collision:
-![hash-collision-mechanism](images/hash-collision-mechanism.png)
+
+<img src=images/hash-collision-mechanism.png width=80% height=80%>
 
 The problem with this method is that we have to query the database to detect collision. Bloom filters could help in this case.
 
@@ -84,13 +87,16 @@ Comparison between the two approaches:
 To keep our service simple, we'll use base62 encoding for the URL shortening.
 
 Here's the whole workflow:
-![url-shortening-deep-dive](images/url-shortening-deep-dive.png)
+
+<img src=images/url-shortening-deep-dive.png width=60% height=60%>
 
 To ensure our ID generator works in a distributed environment, we can use Twitter's snowflake algorithm.
 
 # URL redirection deep dive
 We've introduced a cache as there are more reads than writes, in order to improve read performance:
-![url-redirection-deep-dive](images/url-redirection-deep-dive.png)
+
+<img src=images/url-redirection-deep-dive.png width=80% height=80%>
+
  * User clicks short URL
  * Load balancer forwards the request to one of the service instances
  * If shortURL is in cache, return the longURL directly
