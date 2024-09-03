@@ -2,7 +2,8 @@
 We'll focus next on designing a web crawler - a classical system design problem.
 
 Web crawlers (aka robots) are used to discover new or updated content on the web, such as articles, videos, PDFs, etc.
-![web-crawler-example](images/web-crawler-example.png)
+
+<img src=images/web-crawler-example.png width=80% height=80%>
 
 Use-cases:
  * Search engine indexing - for creating a local index of a search engine, eg Google's Googlebot.
@@ -49,7 +50,8 @@ Peak QPS = 800 pages per second
 Given average web page size is 500kb -> 500 TB per month -> 30 PB for 5y.
 
 # Step 2 - Propose high-level design and get buy-in
-![high-level-design](images/high-level-design.png)
+
+<img src=images/high-level-design.png width=80% height=80%>
 
 What's going on in there?
  * Seed URLs - These URLs are the starting point for crawlers. It's important to pick the seed URLs well in order to traverse the web appropriately.
@@ -65,7 +67,9 @@ What's going on in there?
  * URL Storage - Store already visited URLs.
 
 Those are all the component, but what about the workflow?
-![web-crawler-workflow](images/web-crawler-workflow.png)
+
+<img src=images/web-crawler-workflow.png width=80% height=80%>
+
  1. Add Seed URLs to URL Frontier
  2. HTML Downloader fetches a list of URLs from frontier
  3. Match URLs to IP Addresses via the DNS resolver
@@ -107,10 +111,14 @@ The URL Frontier helps address these problems. It prioritizes URLs and ensures p
 A web crawler should avoid sending too many requests to the same host in a short time frame as it can cause excessive traffic to traversed website.
 
 Politeness is implemented by maintaining a download queue per hostname \w a delay between element processing:
-![download-queue](images/download-queue.png)
+
+<img src=images/download-queue.png width=50% height=50%>
+
  * The queue router ensures that each queue contains URLs from the same host.
  * Mapping table - maps each host to a queue.
-![mapping-table](images/mapping-table.png)
+
+<img src=images/mapping-table.png width=50% height=50%>
+
  * FIFO queues maintain URLs belonging to the same host.
  * Queue selector - Each worker thread is mapped to a FIFO queue and only downloads URLs from that queue. Queue selector chooses which worker processes which queue.
  * Worker thread 1 to N - Worker threads download web pages one by one from the same host. Delay can be added between two download tasks.
@@ -119,7 +127,9 @@ Politeness is implemented by maintaining a download queue per hostname \w a dela
 We prioritize URLs by usefulness, which can be determined based on PageRank web traffic, update frequency, etc.
 
 Prioritizer manages the priority for each URL:
-![prioritizer](images/prioritizer.png)
+
+<img src=images/prioritizer.png width=50% height=50%>
+
  * Takes URLs as input and calculates priority
  * Queues have different priorities. URLs are put into respective queue based on its priority.
  * Queue selector - randomly choose queue to select from with bias towards high-priority ones.
@@ -159,7 +169,9 @@ We need to respect that file and avoid crawling the pages specified in there. We
 ### Performance optimization
 Some performance optimizations we can consider for the HTML downloader.
  * Distributed crawl - We can parallelize crawl jobs to multiple machines which run multiple threads to crawl more efficiently.
-![distributed-crawl](images/distributed-crawl.png)
+
+<img src=images/distributed-crawl.png width=50% height=50%>
+
  * Cache DNS Resolver - We can maintain our own DNS cache to avoid making requests to the DNS resolver all the time, which can be costly. It's updated periodically by cron jobs.
  * Locality - We can distribute crawl jobs based on geography. When crawlers are physically closer to website servers, latency is lower.
  * Short timeout - We need to add a timeout in case servers are unresponsive beyond a given threshold. Otherwise, our crawlers can spend a lot of time waiting for pages which will never come.
