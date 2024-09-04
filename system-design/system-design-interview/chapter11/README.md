@@ -27,7 +27,9 @@ This section explores the high-level design of the notification system.
 How do the different notification types work at a high level?
 
 ### iOS push notification
-![ios-push-notifications](images/ios-push-notifications.png)
+
+<img src=images/ios-push-notifications.png width=50% height=50%>
+
  * Provider - builds and sends notification requests to Apple Push Notification Service (APNS). To do that, it needs some inputs:
    * Device token - unique identifier used for sending push notifications 
    * Payload - JSON payload for the notification, eg:
@@ -48,29 +50,37 @@ How do the different notification types work at a high level?
 
 ### Android Push Notification
 Android adopts a similar approach. A common alternative to APNS is Firebase Cloud Messaging:
-![android-push-notifications](images/android-push-notifications.png)
+
+<img src=images/android-push-notifications.png width=50% height=50%>
 
 ### SMS Message
 For SMS, third-party providers like Twilio are available:
-![sms-messages](images/sms-messages.png)
+
+<img src=images/sms-messages.png width=50% height=50%>
 
 ### Email
 Although clients can setup their own mail servers, most clients opt-in to use third-party services, like Mailchimp:
-![email-sending](images/email-sending.png)
+
+<img src=images/email-sending.png width=50% height=50%>
 
 Here's final design after including all notification providers:
-![notification-providers-design](images/notification-providers-design.png)
+
+<img src=images/notification-providers-design.png width=50% height=50%>
 
 ## Contact info gathering form
 In order to send notifications, we need to gather some inputs from the user first. That is done at user signup:
-![contact-info-gathering](images/contact-info-gathering.png)
+
+<img src=images/contact-info-gathering.png width=80% height=80%>
 
 Example database tables for storing contact info:
-![contact-info-db](images/contact-info-db.png)
+
+<img src=images/contact-info-db.png width=80% height=80%>
 
 ## Notification sending/receiving flow
 Here's the high-level design of our notification system:
-![high-level-design](images/high-level-design.png)
+
+<img src=images/high-level-design.png width=70% height=70%>
+
  * Service 1 to N - other services in the system or cron jobs which trigger notification sending events.
  * Notification system - accepts notification sending messages and propagates to the correct provider.
  * Third-party services - responsible for delivering the messages to the correct users via the appropriate medium. This part should be build \w extensibility in case we change third-party service providers in the future.
@@ -134,7 +144,8 @@ Some questions to consider in terms of making the system reliable:
  * Will recipients receive notifications exactly once?
 
 To avoid data loss, we can persist notifications in a notification log database on the workers, which retry them in case a notification doesn't go through:
-![notification-log-db](images/notification-log-db.png)
+
+<img src=images/notification-log-db.png width=50% height=50%>
 
 What about duplicate notifications?
 
@@ -177,7 +188,8 @@ A critical metric to keep track of is number of queued notifications. If it gets
 We might have to track certain events related to a notification, eg open rate/click rate/etc.
 
 Usually, this is done by integrating with an Analytics service, so we'll need to integrate our notification system with one.
-![notification-events](images/notification-events.png)
+
+<img src=images/notification-events.png width=50% height=50%>
 
 ## Updated design
 Putting everything together, here's our final design:
