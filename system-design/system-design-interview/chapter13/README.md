@@ -38,7 +38,8 @@ Main functions the chat service should support:
  * Receive messages from clients
  * Find the right recipients for a message and relay it
  * If recipient is not online, hold messages for them until they get back online.
-![store-relay-message](images/store-relay-message.png)
+
+<img src=images/store-relay-message.png width=50% height=50%>
 
 When clients connect to the server, they can do it via one or more network protocols.
 One option is HTTP. That is okay for the sender-side, but not okay for receiver-side.
@@ -47,12 +48,14 @@ There are multiple options to handle a server-initiated message for the client -
 
 ## Polling
 Polling requires the client to periodically ask the server for status updates:
-![polling](images/polling.png)
+
+<img src=images/polling.png width=50% height=50%>
 
 This is easy to implement but it can be costly as there are many requests, which often yield no results
 
 ## Long polling
-![long-polling](images/long-polling.png)
+
+<img src=images/long-polling.png width=50% height=50%>
 
 With long polling, clients hold the connection open while waiting for an event to occur on the server-side.
 This still has some wasted requests if users don't chat much, but it is more efficient than polling.
@@ -63,7 +66,8 @@ Other caveats:
 
 ## WebSocket
 Most common approach when bidirectional communication is needed:
-![web-sockets](images/web-sockets.png)
+
+<img src=images/web-sockets.png width=50% height=50%>
 
 The connection is initiated by the client and starts as HTTP, but can be upgraded after handshake.
 In this setup, both clients and servers can initiate messages.
@@ -74,7 +78,8 @@ One caveat with web sockets is that this is a persistent protocol, making the se
 Although we mentioned how web sockets can be useful for exchanging messages, most other standard features of our chat can use the normal request/response protocol over HTTP.
 
 Given this remark, our service can be broken down into three parts - stateless API, stateful websocket API and third-party integration for notifications:
-![high-level-design](images/high-level-design.png)
+
+<img src=images/high-level-design.png width=50% height=50%>
 
 ### Stateless Services
 Traditional public-facing request/response services are used to manage login, signup, user profile, etc.
@@ -106,7 +111,9 @@ One big drawback of a single server design is the single point of failure.
 It is fine, however, to start from a single-server design and extend it later as long as you explicitly state that during the interview.
 
 Here's our refined high-level design:
-![refined-high-level-design](images/refined-high-level-design.png)
+
+<img src=images/refined-high-level-design.png width=60% height=60%>
+
  * clients maintain a persistent web socket connection with a chat server for real-time messaging
  * The chat servers facilitate message sending/receiving
  * Presense servers manage online/offline status
@@ -138,12 +145,14 @@ Selecting the correct storage system for this kind of data is crucial. Author re
 Let's take a look at the data model for our messages.
 
 Message table for one-on-one chat:
-![one-on-one-chat-table](images/one-on-one-chat-table.png)
+
+<img src=images/one-on-one-chat-table.png width=30% height=30%>
 
 One caveat is that we'll use the primary key (message_id) instead of created_at to determine message sequence as messages can be sent at the same time.
 
 Message table for a group chat:
-![group-chat-table](images/group-chat-table.png)
+
+<img src=images/group-chat-table.png width=30% height=30%>
 
 In the above table, `(channel_id, message_id)` is the primary key, while `channel_id` is also the sharding key.
 
@@ -166,7 +175,9 @@ In this case, we'll go deeper into the service discovery component, messaging fl
 The primary goal of service discovery is to choose the best server based on some criteria - eg geographic location, server capacity, etc.
 
 Apache Zookeeper is a popular open-source solution for service discovery. It registers all available chat servers and picks the best one based on a predefined criteria.
-![service-discovery](images/service-discovery.png)
+
+<img src=images/service-discovery.png width=60% height=60%>
+
  * User A tries to login to the app
  * Load balancer sends request to API servers.
  * After authentication, service discovery chooses the best chat server for user A. In this case, chat server 2 is chosen.
@@ -176,7 +187,9 @@ Apache Zookeeper is a popular open-source solution for service discovery. It reg
 The message flows are an interesting topic to deep dive into. We'll explore one on one chats, message synchronization and group chat.
 
 ### 1 on 1 chat flow
-![one-on-one-chat-flow](images/one-on-one-chat-flow.png)
+
+<img src=images/one-on-one-chat-flow.png width=60% height=60%>
+
  * User A sends a message to chat server 1
  * Chat server 1 obtains a message_id from Id generator
  * Chat server 1 sends the message to the "message sync" queue.
@@ -186,14 +199,17 @@ The message flows are an interesting topic to deep dive into. We'll explore one 
  * Chat server 2 forwards the message to user B.
 
 ### Message synchronization across devices
-![message-sync](images/message-sync.png)
+
+<img src=images/one-on-one-chat-flow.png width=60% height=60%>
+
  * When user A logs in via phone, a web socket is established for that device with chat server 1.
  * Each device maintains a variable called `cur_max_message_id`, keeping track of latest message received on given device.
  * Messages whose recipient ID is currently logged in (via any device) and whose message_id is greater than `cur_max_message_id` are considered new
 
 ### Small group chat flow
 Group chats are a bit more complicated:
-![group-chat-flow](images/group-chat-flow.png)
+
+<img src=images/group-chat-flow.png width=50% height=50%>
 
 Whenever User A sends a message, the message is copied across each message queue of participants in the group (User B and C).
 
@@ -204,28 +220,33 @@ Using one inbox per user is a good choice for small group chats as:
 This is not acceptable though, for larger group chats.
 
 As for the recipient, in their queue, they can receive messages from different group chats:
-![recipient-group-chat](images/recipient-group-chat.png)
+
+<img src=images/recipient-group-chat.png width=50% height=50%>
 
 ## Online presence
 Presence servers manage the online/offline indication in chat applications.
 
 Whenever the user logs in, their status is changed to "online":
-![user-login-online](images/user-login-online.png)
+
+<img src=images/user-login-online.png width=60% height=60%>
 
 Once the user send a logout message to the presence servers (and subsequently disconnects), their status is changed to "offline":
-![user-logout-offline](images/user-logout-offline.png)
+
+<img src=images/user-logout-offline.png width=60% height=60%>
 
 One caveat is handling user disconnection. A naive approach to handle that is to mark a user as "offline" when they disconnect from the presence server.
 This makes for a poor user experience as a user could frequently disconnect and reconnect to presence servers due to poor internet.
 
 To mitigate this, we'll introduce a heartbeat mechanism - clients periodically send a heartbeat to the presence servers to indicate online status.
 If a heartbeat is not received within a given time frame, user is marked offline:
-![user-heartbeat](images/user-heartbeat.png)
+
+<img src=images/user-heartbeat.png width=70% height=70%>
 
 How does a user's friend find out about a user's presence status though?
 
 We'll use a fanout mechanism, where each friend pair have a queue assigned and status changes are sent to the respective queues:
-![presence-status-fanout](images/presence-status-fanout.png)
+
+<img src=images/presence-status-fanout.png width=70% height=70%>
 
 This is effective for small group chats. WeChat uses a similar approach and its user group is capped to 500 users.
 
