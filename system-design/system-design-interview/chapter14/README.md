@@ -29,8 +29,8 @@ Summary:
 # Back of the envelope estimation
  * Assume we have 10mil DAU
  * On average, person performs 10 searches per day
- * 10mil * 10 = 100mil searches per day = 100 000 000 / 86400 = 1200 searches.
- * given 4 works of 5 chars search on average -> 1200 * 20 = 24000 QPS. Peak QPS = 48000 QPS.
+ * 10mil * 10 = 100mil searches per day = 100 000 000 / 86400 = 1200 searches per second.
+ * given 4 words of 5 chars search on average -> 1200 * 20 = 24000 QPS. Peak QPS = 48000 QPS.
  * 20% of daily queries are new -> 100mil * 0.2 = 20mil new searches * 20 bytes = 400mb new data per day.
 
 # Step 2 - Propose high-level design and get buy-in
