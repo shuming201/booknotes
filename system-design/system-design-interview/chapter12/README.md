@@ -33,7 +33,9 @@ Here's some of the main endpoints.
  * `GET /v1/me/feed` - retrieve news feed. Payload includes `auth_token`.
 
 ## Feed publishing
-![feed-publishing](images/feed-publishign.png)
+
+<img src=images/feed-publishign.png width=50% height=50%>
+
  * User makes a new post via API.
  * Load balancer - distributes traffic to web servers.
  * Web servers - redirect traffic to internal services.
@@ -42,7 +44,9 @@ Here's some of the main endpoints.
  * Notification service - inform new friends that content is available.
 
 ## Newsfeed building
-![newsfeed-building](images/newsfeed-building.png)
+
+<img src=images/newsfeed-building.png width=40% height=40%>
+
  * User sends request to retrieve news feed.
  * Load balancer redirects traffic to web servers.
  * Web servers - route requests to newsfeed service.
@@ -53,7 +57,8 @@ Here's some of the main endpoints.
 Let's discuss the two flows we covered in more depth.
 
 ## Feed publishing deep dive
-![feed-publishing-deep-dive](images/feed-publishing-deep-dive.png)
+
+<img src=images/feed-publishing-deep-dive.png width=80% height=80%>
 
 ### Web servers
 besides a gateway to the internal services, these do authentication and apply rate limits, in order to prevent spam.
@@ -83,7 +88,9 @@ Cons:
 We'll adopt a hybrid approach - we'll pre-compute the news feed for people without many friends and use the pull model for celebrities and users with many friends/followers.
 
 System diagram of fanout service:
-![fanout-service](images/fanout-service.png)
+
+<img src=images/fanout-service.png width=60% height=60%>
+
  * Fetch friend IDs from graph database. They're suited for managing friend relationships and recommendations.
  * Get friends info from user cache. Filtering is applied here for eg muted/blocked friends.
  * Send friends list and post ID to the message queue.
@@ -92,7 +99,9 @@ System diagram of fanout service:
 ** I think there is some kind of error in this part of the book. It doesn't make sense to store a `<post_id, user_id>` mapping in the cache. Instead, it should be a `<user_id, post_id>` mapping as that allows one to quickly fetch all posts for a given user, which are part of their news feed. In addition to that, the example in the book shows that you can store multiple user_ids or post_ids as keys in the cache, which is typically not supported in eg a hashmap, but it is actually supported when you use the `Redis Sets` feature, but that is not explicitly mentioned in the chapter.
 
 ## News feed retrieval deep dive
-![news-feed-retrieval-deep-dive](images/news-feed-retrieval-deep-dive.png)
+
+<img src=images/news-feed-retrieval-deep-dive.png width=60% height=60%>
+
  * user sends request to retrieve news feed.
  * Load balancer distributes request to a set of web servers.
  * Web servers call news feed service.
@@ -103,7 +112,9 @@ System diagram of fanout service:
 
 ## Cache architecture
 Cache is very important for a news feed service. We divided it into 5 layers:
-![cache-layer](images/cache-layer.png)
+
+<img src=images/cache-layer.png width=50% height=50%>
+
  * news feed - stores ids of news feeds
  * content - stores every post data. Popular content is stored in hot cache.
  * social graph - store user relationship data.
