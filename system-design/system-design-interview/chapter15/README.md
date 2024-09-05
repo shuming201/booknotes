@@ -45,7 +45,9 @@ Why?
  * Building scalable blob storage over CDN is complex and costly. Even big tech don't build everything from scratch. Netflix uses AWS and Facebook uses Akamai's CDN.
 
 Here's our system design at a high-level:
+
 <img src=images/high-level-sys-design.png width=50% height=50%>
+
  * Client - you can watch youtube on web, mobile and TV.
  * CDN - videos are stored in CDN.
  * API Servers - Everything else, except video streaming goes through the API servers. Feed recommendation, generating video URL, updating metadata db and cache, user signup.
@@ -53,6 +55,7 @@ Here's our system design at a high-level:
 Let's explore high-level design of video streaming and uploading.
 
 ## Video uploading flow
+
 <img src=images/video-uploading-flow.png width=70% height=70%>
 
  * Users watch videos on a supported client
@@ -78,13 +81,15 @@ Here's how the video uploading flow works:
  * API servers inform user that uploading is complete
 
 Here's how the metadata update flow works:
-<img src=images/metadata-update-flow.png width=50% height=50%>
+
+<img src=images/metadata-update-flow.png width=40% height=40%>
 
  * While file is being uploaded, user sends a request to update the video metadata - file name, size, format, etc.
  * API servers update metadata database & cache
 
 ## Video streaming flow
-<img src=images/video-streaming-flow.png width=50% height=50%>
+
+<img src=images/video-streaming-flow.png width=30% height=30%>
 
 Whenever users watch videos on YouTube, they don't download the whole video at once. Instead, they download a little and start watching it while downloading the rest.
 This is referred to as streaming. Stream is served from closest CDN server for lowest latency.
@@ -118,20 +123,24 @@ Transcoding video is computationally expensive and time-consuming.
 In addition to that, different creators have different inputs - some provide thumbnails, others do not, some upload HD, others don't.
 
 In order to support video processing pipelines, dev customisations, high parallelism, we adopt a DAG model:
-![dag-model](images/dag-model.png)
+
+<img src=images/dag-model.png width=70% height=70%>
 
 Some of the tasks applied on a video file:
  * Ensure video has good quality and is not malformed
  * Video is encoded to support different resolutions, codecs, bitrates, etc.
  * Thumbnail is automatically added if a user doesn't specify it.
  * Watermark - image overlay on video if specified by creator
-<img src=images/video-encodings.png width=50% height=50%>
+
+<img src=images/video-encodings.png width=30% height=30%>
 
 ## Video transcoding architecture
-![video-transcoding-architecture](images/video-transcoding-architecture.png)
+
+<img src=images/video-transcoding-architecture.png width=60% height=60%>
 
 ### Preprocessor
-![preprocessor](images/preprocessor.png)
+
+<img src=images/preprocessor.png width=60% height=60%>
 
 The preprocessor's responsibilities:
  * Video splitting - video is split in group of pictures (GOP) alignment, ie arranged groups of chunks which can be played independently
@@ -139,21 +148,27 @@ The preprocessor's responsibilities:
  * DAG generation - DAG is generated based on config files specified by programmers.
 
 Example DAG configuration with two steps:
-![dag-config-example](images/dag-config-example.png)
+
+<img src=images/dag-config-example.png width=60% height=60%>
 
 ### DAG Scheduler
-![dag-scheduler](images/dag-scheduler.png)
+
+<img src=images/dag-scheduler.png width=60% height=60%>
 
 DAG scheduler splits a DAG into stages of tasks and puts them in a task queue, managed by a resource manager:
-![dag-split-example](images/dag-split-example.png)
+
+<img src=images/dag-split-example.png width=60% height=60%>
 
 In this example, a video is split into video, audio and metadata stages which are processed in parallel.
 
 ### Resource manager
-![resource-manager](images/resource-manager.png)
+
+<img src=images/resource-manager.png width=60% height=60%>
 
 Resource manager is responsible for optimizing resource allocation.
-![resource-manager-deep-dive](images/resource-manager-deep-dive.png)
+
+<img src=images/resource-manager-deep-dive.png width=80% height=80%>
+
  * Task queue is a priority queue of tasks to be executed
  * Worker queue is a queue of available workers and worker utilization info
  * Running queue contains info about currently running tasks and which workers they're assigned to
@@ -166,20 +181,23 @@ How it works:
  * task scheduler removes the job from the running queue once the job is done
 
 ### Task workers
-<img src=images/task-workers.png width=80% height=80%>
+
+<img src=images/task-workers.png width=60% height=60%>
 
 The workers execute the tasks in the DAG. Different workers are responsible for different tasks and can be scaled independently.
 <img src=images/task-workers-example.png width=20% height=20%>
 
 ### Temporary storage
-![temporary-storage](images/temporary-storage.png)
+
+<img src=images/temporary-storage.png width=60% height=60%>
 
 Multiple storage systems are used for different types of data. Eg temporary images/video/audio is put in blob storage. Metadata is put in an in-memory cache as data size is small.
 
 Data is freed up once processing is complete.
 
 ### Encoded video
-![encoded-video](images/encoded-video.png)
+
+<img src=images/encoded-video.png width=60% height=60%>
 
 Final output of the DAG. Example output - `funny_720p.mp4`.
 
@@ -188,7 +206,8 @@ Now it's time to introduce some optimizations for speed, safety, cost-saving.
 
 ### Speed optimization - parallelize video uploading
 We can split video uploading into separate units via GOP alignment:
-![video-uploading-optimization](images/video-uploading-optimization.png)
+
+<img src=images/video-uploading-optimization.png width=60% height=60%>
 
 This enables fast resumable uploads if something goes wrong. Splitting the video file is done by the client.
 
@@ -201,14 +220,17 @@ This can be achieved by leveraging CDNs.
 We can build a loosely coupled system and enable high parallelism.
 
 Currently, components rely on inputs from previous components in order to produce outputs:
-![no-parralelism-components](images/no-parralelism-components.png)
+
+<img src=images/no-parralelism-components.png width=80% height=80%>
 
 We can introduce message queues so that components can start doing their task independently of previous one once events are available:
-![parralelism-components](images/parralelism-components.png)
+
+<img src=images/parralelism-components.png width=80% height=80%>
 
 ### Safety optimization - pre-signed upload URL
 To avoid unauthorized users from uploading videos, we introduce pre-signed upload URLs:
-![presigned-upload-url](images/presigned-upload-url.png)
+
+<img src=images/presigned-upload-url.png width=50% height=50%>
 
 How it works:
  * client makes request to API server to fetch upload URL
