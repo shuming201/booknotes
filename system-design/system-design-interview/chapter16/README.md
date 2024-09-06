@@ -53,7 +53,8 @@ We'll start from:
  * Storage system to store the files
 
 Example storage we could use:
-![storage-example](images/storage-example.png)
+
+<img src=images/storage-example.png width=60% height=60%>
 
 ## APIs
 **Upload file:**
@@ -97,7 +98,8 @@ One option to scale your storage server is by implementing sharing - each user's
 This solves your issue but you're still worried about potential data loss.
 
 A good option to address that is to use an off-the-shelf solution like Amazon S3 which offers replication (same-region/cross-region) out of the box:
-![amazon-s3](images/amazon-s3.png)
+
+<img src=images/amazon-s3.png width=60% height=60%>
 
 Other areas you could improve:
  * Load balancing - this ensures evenly distributed network traffic to your web server replicas.
@@ -116,10 +118,13 @@ To address this, we can apply a strategy where the first who manages to modify a
 ![sync-conflict](images/sync-conflict.png)
 
 What happens once you get a conflict? We generate a second version of the file which represents the alternative file version and it's up to the user to merge it:
-![sync-conflict-example](images/sync-conflict-example.png)
+
+!<img src=images/sync-conflict-example.png width=60% height=60%>
 
 ## High-level design
-![high-level-design](images/high-level-design.png)
+
+<img src=images/high-level-design.png width=80% height=80%>
+
  * User uses the application through a browser or a mobile app
  * Block servers upload files to cloud storage. Block storage is a technology which allows you to split a big file in blocks and store the blocks in a backing storage. Dropbox, for example, stores blocks of size 4mb.
  * Cloud storage - a file split into multiple blocks is stored in cloud storage
@@ -148,10 +153,12 @@ Two optimizations we're going to explore:
  * Compression - applying compression on blocks can significantly reduce data size. Different algorithms are suitable for different file types, eg for text files, we'll use gzip/bzip2.
 
 Apart from splitting files in blocks, the block servers also apply encryption prior to storing files in file storage:
-![block-servers-deep-dive](images/block-servers-deep-dive.png)
+
+<img src=images/block-servers-deep-dive.png width=80% height=80%>
 
 Example delta sync:
-![delta-sync](images/delta-sync.png)
+
+<img src=images/delta-sync.png width=60% height=60%>
 
 ## High consistency requirement
 Our system requires strong consistency as it's unacceptable to show different versions of a file to different people.
