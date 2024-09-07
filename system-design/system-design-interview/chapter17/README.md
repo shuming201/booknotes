@@ -65,13 +65,15 @@ On the other hand, write volume is low because we rarely change business informa
 
 In terms of schema, we'll need one main `business` table which holds information about a business:
 
-<img src="images/business-table.png" alt="business-table.png" width="400"/>
+<img src=images/business-table.png width=20% height=20%>
 
 We'll also need a geo-index table so that we efficiently process spatial operations. This table will be discussed later when we introduce the concept of geohashes.
 
 ## High-level design
 Here's a high-level overview of the system:
-![high-level-design](images/high-level-deisgn.png)
+
+<img src=images/high-level-deisgn.png width=80% height=80%>
+
  * The load balancer automatically distributes incoming traffic across multiple services. A company typically provides a single DNS entry point and internally routes API calls to appropriate services based on URL paths.
  * Location-based service (LBS) - read-heavy, stateless service, responsible for serving read requests for nearby businesses
  * Business service - supports CRUD operations on businesses.
@@ -277,7 +279,9 @@ It also enables us to spread traffic evenly across the globe. This could also be
 Once businesses are filtered, the result set is going to be small, hence, it is acceptable to filter the data in-memory.
 
 ## Final design diagram
-![final-design](images/final-design.png)
+
+<img src=images/final-design.png width=80% height=80%>
+
  * Client tries to locate restaurants within 500meters of their location
  * Load balancer forwards the request to the LBS
  * LBS maps the radius to geohash with length 6
