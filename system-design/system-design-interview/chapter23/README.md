@@ -1,4 +1,4 @@
-/n/# Hotel Reservation System
+# Hotel Reservation System
 In this chapter, we're designing a hotel reservation system, similar to Marriott International.
 
 Applicable to other types of systems as well - Airbnb, flight reservation, movie ticket booking.
